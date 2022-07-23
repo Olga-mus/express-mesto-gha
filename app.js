@@ -2,6 +2,9 @@
 const express = require('express');
 const mongoose = require('mongoose');
 const bodyParser = require('body-parser');
+const authorization = require('./middlewares/authorization');
+// const pageNotFound = require('./middlewares/pageNotFound');
+
 // Слушаем 3000 порт
 const { PORT = 3000 } = process.env;
 
@@ -13,9 +16,11 @@ app.use(bodyParser.urlencoded({ extended: true }));
 // подключаемся к серверу mongo
 mongoose.connect('mongodb://localhost:27017/mestodb');
 
-app.listen(PORT, () => {
-  // Если всё работает, консоль покажет, какой порт приложение слушает
-  console.log(`App listening on port ${PORT}`);
-});
+app.use(authorization);
+// app.use(pageNotFound);
 
-app.use('/users', require('./routes/users')); // запускаем, при запросе на '/users' срабатывает роутер './routes/usersusers'
+app.listen(PORT);
+
+app.use('/users', require('./routes/users')); // запускаем, при запросе на '/users' срабатывает роутер './routes/users'
+
+app.use('/cards', require('./routes/cards')); // запускаем, при запросе на '/cards' срабатывает роутер './routes/cards'
