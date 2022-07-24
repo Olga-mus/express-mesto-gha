@@ -17,10 +17,10 @@ app.use(bodyParser.urlencoded({ extended: true }));
 mongoose.connect('mongodb://localhost:27017/mestodb');
 
 app.use(authorization);
-app.use(pageNotFound);
 
 app.listen(PORT);
 
 app.use('/users', require('./routes/users')); // запускаем, при запросе на '/users' срабатывает роутер './routes/users'
-
 app.use('/cards', require('./routes/cards')); // запускаем, при запросе на '/cards' срабатывает роутер './routes/cards'
+
+app.use(pageNotFound);

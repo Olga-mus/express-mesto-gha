@@ -43,15 +43,14 @@ module.exports.deleteCurrentCard = (req, res) => {
 // создаёт карточку 400
 module.exports.createCard = (req, res) => {
   console.log(req.user._id); // _id станет доступен
-  const { name, link, likes } = req.body;
+  const { name, link } = req.body;
   const owner = req.user._id;
   Card.create({
     name,
     link,
     owner,
-    likes,
   })
-    .then((card) => res.status(created).res.send({ data: card }))
+    .then((card) => res.status(created).send(card))
     .catch((err) => {
       if (err.name === 'ValidationError') {
         res.status(badRequest).send({ message: 'Ошибка валидации' });
@@ -61,6 +60,7 @@ module.exports.createCard = (req, res) => {
     });
 };
 
+// ставит карточке лайк
 module.exports.likeCard = (req, res) => {
   const owner = req.user._id;
   const { cardId } = req.params;
@@ -84,6 +84,7 @@ module.exports.likeCard = (req, res) => {
     });
 };
 
+// убирает у карточки лайк
 module.exports.dislikeCard = (req, res) => {
   const owner = req.user._id;
   const { cardId } = req.params;

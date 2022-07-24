@@ -36,13 +36,14 @@ module.exports.getCurrentUser = (req, res) => {
     });
 };
 
+// создает пользователя
 module.exports.createUser = (req, res) => {
   const { name, about, avatar } = req.body; // получим из объекта запроса имя и описание пользовател
   User.create({ name, about, avatar }) // создадим документ на основе пришедших данных
     .then((user) => res.send({ data: user })) // вернём записанные в базу данные
-    .catch(() => {
-      if (err.name === 'CastError') {
-        res.status(badRequest).send({ message: 'Невалидный идентификатор для пользователя' });
+    .catch((err) => {
+      if (err.name === 'ValidationError') {
+        res.status(badRequest).send({ message: 'Данные введены не корректно' });
       } else if (err.statusCode === notFound) {
         res.status(notFound).send({ message: 'Такого пользователя нет' });
       } else {
@@ -51,19 +52,21 @@ module.exports.createUser = (req, res) => {
     });
 };
 
+// обновляем данные пользователя
 module.exports.patchProfile = (req, res) => {
-  const { name, about, avatar } = req.body; // получим из объекта запроса имя и описание пользовател
+  const { name, about } = req.body; // получим из объекта запроса имя и описание пользовател
   // обновим имя найденного по _id пользователя
-  User.findByIdAndUpdate(req.user._id, { name, about, avatar })
+  const opts = { runValidators: true, new: true };
+  User.findByIdAndUpdate(req.user._id, { name, about }, opts)
     .orFail(() => {
       const error = new Error();
       error.statusCode = notFound;
       throw error;
     })
     .then((cards) => res.send({ data: cards }))
-    .catch(() => {
-      if (err.name === 'CastError') {
-        res.status(badRequest).send({ message: 'Невалидный идентификатор для пользователя' });
+    .catch((err) => {
+      if (err.name === 'ValidationError') {
+        res.status(badRequest).send({ message: 'Данные введены не корректно' });
       } else if (err.statusCode === notFound) {
         res.status(notFound).send({ message: 'Такого пользователя нет' });
       } else {
@@ -72,19 +75,21 @@ module.exports.patchProfile = (req, res) => {
     });
 };
 
+// обновляем аватар пользователя
 module.exports.patchAvatar = (req, res) => {
-  const { name, about, avatar } = req.body; // получим из объекта запроса имя и описание пользовател
+  const { avatar } = req.body; // получим из объекта запроса имя и описание пользовател
   // обновим имя найденного по _id пользователя
-  User.findByIdAndUpdate(req.user._id, { name, about, avatar })
+  const opts = { runValidators: true, new: true };
+  User.findByIdAndUpdate(req.user._id, { avatar }, opts)
     .orFail(() => {
       const error = new Error();
       error.statusCode = notFound;
       throw error;
     })
     .then((cards) => res.send({ data: cards }))
-    .catch(() => {
-      if (err.name === 'CastError') {
-        res.status(badRequest).send({ message: 'Невалидный идентификатор для пользователя' });
+    .catch((err) => {
+      if (err.name === 'ValidationError') {
+        res.status(badRequest).send({ message: 'Данные введены не корректно' });
       } else if (err.statusCode === notFound) {
         res.status(notFound).send({ message: 'Такого пользователя нет' });
       } else {
