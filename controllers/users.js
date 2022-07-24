@@ -2,7 +2,6 @@
 const User = require('../models/user');
 
 const {
-  created,
   badRequest,
   notFound,
   serverError,
@@ -44,8 +43,6 @@ module.exports.createUser = (req, res) => {
     .catch((err) => {
       if (err.name === 'ValidationError') {
         res.status(badRequest).send({ message: 'Данные введены не корректно' });
-      } else if (err.statusCode === notFound) {
-        res.status(notFound).send({ message: 'Такого пользователя нет' });
       } else {
         res.status(serverError).send({ message: err.message });
       }

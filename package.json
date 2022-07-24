@@ -5,8 +5,9 @@
   "main": "index.js",
   "scripts": {
     "start": "node --inspect app.js",
-    "lint": "eslint .",
-    "dev": "nodemon app.js"
+    "lint": "npx eslint .",
+    "dev": "nodemon app.js",
+    "lint fix": "npx eslint . --fix"
   },
   "repository": {
     "type": "git",

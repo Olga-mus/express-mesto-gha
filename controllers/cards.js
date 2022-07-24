@@ -42,7 +42,6 @@ module.exports.deleteCurrentCard = (req, res) => {
 
 // создаёт карточку 400
 module.exports.createCard = (req, res) => {
-  console.log(req.user._id); // _id станет доступен
   const { name, link } = req.body;
   const owner = req.user._id;
   Card.create({
