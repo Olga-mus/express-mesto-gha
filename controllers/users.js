@@ -2,6 +2,7 @@
 const User = require('../models/user');
 
 const {
+  created,
   badRequest,
   notFound,
   serverError,
@@ -39,7 +40,7 @@ module.exports.getCurrentUser = (req, res) => {
 module.exports.createUser = (req, res) => {
   const { name, about, avatar } = req.body; // получим из объекта запроса имя и описание пользовател
   User.create({ name, about, avatar }) // создадим документ на основе пришедших данных
-    .then((user) => res.send({ data: user })) // вернём записанные в базу данные
+    .then((user) => res.status(created).send({ data: user })) // вернём записанные в базу данные
     .catch((err) => {
       if (err.name === 'ValidationError') {
         res.status(badRequest).send({ message: 'Данные введены не корректно' });
