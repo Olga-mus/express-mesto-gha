@@ -21,9 +21,9 @@ const userSchema = new mongoose.Schema({
     default: [],
     required: true, // оно должно быть у каждого пользователя, так что имя — обязательное поле
   }],
-  createdAt: {
+  createdAt: { // создание карточки
     type: Date,
-    default: Date.now,
+    default: Date.now, // значение по умолчанию
   },
 });
 

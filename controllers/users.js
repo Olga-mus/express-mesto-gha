@@ -1,4 +1,5 @@
 // это файл контроллеров
+const bcrypt = require('bcryptjs'); // импортируем bcrypt
 const User = require('../models/user');
 
 const {
@@ -38,8 +39,22 @@ module.exports.getCurrentUser = (req, res) => {
 
 // создает пользователя
 module.exports.createUser = (req, res) => {
-  const { name, about, avatar } = req.body; // получим из объекта запроса имя и описание пользовател
-  User.create({ name, about, avatar }) // создадим документ на основе пришедших данных
+  const {
+    name, about, avatar, email, password,
+  } = req.body; // получим из объекта запроса
+  User.create({
+    name, about, avatar, email, password,
+  });// создадим документ
+  // на основе пришедших данных
+
+  // Добавим код для хеширования в контроллер создания пользователя. За это отвечает метод hash
+  bcrypt.hash(req.body.password, 10) // Метод принимает на вход два параметра:
+  // пароль и длину так называемой «соли» — случайной строки,
+  // которую метод добавит к паролю перед хешированем.
+    .then((hash) => User.create({
+      email: req.body.email,
+      password: hash, // записываем хеш в базу
+    }))
     .then((user) => res.status(created).send({ data: user })) // вернём записанные в базу данные
     .catch((err) => {
       if (err.name === 'ValidationError') {
