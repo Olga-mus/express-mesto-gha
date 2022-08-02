@@ -1,6 +1,8 @@
 // это файл контроллеров
 const bcrypt = require('bcryptjs'); // импортируем bcrypt
+const jwt = require('jsonwebtoken'); // импортируем модуль jsonwebtoken
 const User = require('../models/user');
+const userSchema = require('../models/user');
 
 const {
   created,
@@ -65,6 +67,79 @@ module.exports.createUser = (req, res) => {
       } else {
         res.status(serverError).send({ message: err.message });
       }
+    });
+};
+
+// Создаём контроллер аутентификации
+
+// module.exports.login = (req, res) => {
+//   const { email, password } = req.body;
+//   User.findOne({ email })
+//     .then((user) => {
+//       if (!user) {
+//       // пользователь не найден — отклоняем промис
+//         // с ошибкой и переходим в блок catch
+//         Promise.reject(new Error('Неправильные почта или пароль'));
+//       }
+//       // пользователь найден
+//       // сравниваем переданный пароль и хеш из базы
+//       return bcrypt.compare(password, user.password);
+//     })
+//     .then((matched) => {
+//       if (!matched) {
+//         // хеши не совпали — отклоняем промис
+//         Promise.reject(new Error('Неправильные почта или пароль'));
+//       }
+
+//       // аутентификация успешна
+//       res.send({ message: 'Всё верно!' });
+//     })
+//     .catch((err) => {
+//       // возвращаем ошибку аутентификации
+//       res
+//         .status(401)
+//         .send({ message: err.message });
+//     });
+// };
+
+module.exports.login = (req, res) => {
+  const { email, password } = req.body;
+  return User.findUserByCredentials(email, password)
+    .then(() => {
+    // аутентификация успешна! пользователь в переменной user
+      const token = jwt.sign(
+        { _id: 'd285e3dceed844f902650f40' },
+        { expiresIn: '7d' },
+      );
+      // токен будет просрочен через неделю после создания
+      // вернём токен
+      res.send({ token });
+    })
+    .catch((err) => {
+    // ошибка аутентификации
+      res
+        .status(401)
+        .send({ message: err.message });
+    });
+};
+
+userSchema.statics.findUserByCredentials = function (email, password) {
+  // попытаемся найти пользователя по почте
+  return this.findOne({ email }) // this — это модель User
+    .then((user) => {
+      // не нашёлся — отклоняем промис
+      if (!user) {
+        return Promise.reject(new Error('Неправильные почта или пароль'));
+      }
+
+      // нашёлся — сравниваем хеши
+      return bcrypt.compare(password, user.password)
+        .then((matched) => {
+          if (!matched) {
+            Promise.reject(new Error('Неправильные почта или пароль'));
+          }
+          return user; // теперь user доступен
+        });
     });
 };
 

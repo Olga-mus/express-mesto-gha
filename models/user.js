@@ -34,5 +34,15 @@ const userSchema = new mongoose.Schema({
     minlength: 8,
   },
 });
+// сделаем код проверки почты и пароля частью схемы User.
+// Для этого напишем метод findUserByCredentials,
+// который принимает на вход два параметра — почту и пароль —
+// и возвращает объект пользователя или ошибку.
+// добавим метод findUserByCredentials схеме пользователя
+// у него будет два параметра — почта и пароль
+// Чтобы добавить собственный метод, запишем его в свойство statics нужной схемы
+userSchema.statics.findUserByCredentials = function (email, password) {
+
+};
 
 module.exports = mongoose.model('user', userSchema);
