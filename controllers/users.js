@@ -52,11 +52,12 @@ module.exports.createUser = (req, res) => {
 
 // обновляем данные пользователя
 module.exports.patchProfile = (req, res) => {
-  const { name, about } = req.body; // получим из объекта запроса имя и описание пользовател
-  // обновим имя найденного по _id пользователя
+  const { name, about } = req.body;
+  // При обновлении аватара и профиля некорректные значения ошибка валидации
+  // При обновлении пользователя или карточек в options необходимо передать { new: true }
   const opts = { runValidators: true, new: true };
   User.findByIdAndUpdate(req.user._id, { name, about }, opts)
-    .orFail(() => {
+    .orFail(() => { // orFail - если БД отправляет пустой объект=>catch
       const error = new Error();
       error.statusCode = notFound;
       throw error;
