@@ -41,8 +41,8 @@ const userSchema = new mongoose.Schema({
 // добавим метод findUserByCredentials схеме пользователя
 // у него будет два параметра — почта и пароль
 // Чтобы добавить собственный метод, запишем его в свойство statics нужной схемы
-userSchema.statics.findUserByCredentials = function (email, password) {
+// userSchema.statics.findUserByCredentials = function (email, password) {
 
-};
+// };
 
 module.exports = mongoose.model('user', userSchema);
