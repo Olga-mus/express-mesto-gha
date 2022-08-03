@@ -189,3 +189,24 @@ module.exports.patchAvatar = (req, res) => {
       }
     });
 };
+
+// контроллер для получения информации о пользователе
+module.exports.getUserInfo = (req, res) => {
+  const { userId } = req.params;
+  User.findById(userId)
+    .orFail(() => {
+      const error = new Error();
+      error.statusCode = notFound;
+      throw error;
+    })
+    .then((users) => res.send({ data: users }))
+    .catch((err) => {
+      if (err.name === 'CastError') {
+        res.status(badRequest).send({ message: 'Невалидный идентификатор для пользователя' });
+      } else if (err.statusCode === notFound) {
+        res.status(notFound).send({ message: 'Такого пользователя нет' });
+      } else {
+        res.status(serverError).send({ message: err.message });
+      }
+    });
+};
