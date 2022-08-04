@@ -18,7 +18,12 @@ module.exports.getCards = (req, res) => {
 
 // удаляет карточку по идентификатору 404
 module.exports.deleteCurrentCard = (req, res) => {
-  const { cardId } = req.params;
+  const { cardId, userId } = req.params;
+  const owner = req.user._id;
+  if (userId !== owner) {
+    res.status(serverError).send({ message: 'Вы можете удалять только свои карточки' });
+    return;
+  }
   Card.findByIdAndRemove(cardId)
     .orFail(() => {
       const error = new Error(); // создаём стандартную ошибку, текст ошибки
