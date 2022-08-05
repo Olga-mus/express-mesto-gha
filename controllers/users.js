@@ -1,8 +1,9 @@
 // это файл контроллеров
-const bcrypt = require('bcryptjs'); // импортируем bcrypt
+
 const jwt = require('jsonwebtoken'); // импортируем модуль jsonwebtoken
+const bcrypt = require('bcryptjs'); // импортируем bcrypt
 const User = require('../models/user');
-const userSchema = require('../models/user');
+// const userSchema = require('../models/user');
 
 const {
   created,
@@ -106,7 +107,6 @@ module.exports.login = (req, res) => {
   const { email, password } = req.body;
   return User.findUserByCredentials(email, password)
     .then(() => {
-    // аутентификация успешна! пользователь в переменной user
       const token = jwt.sign(
         { _id: 'd285e3dceed844f902650f40' },
         { expiresIn: '7d' },
@@ -120,26 +120,6 @@ module.exports.login = (req, res) => {
       res
         .status(401)
         .send({ message: err.message });
-    });
-};
-
-userSchema.statics.findUserByCredentials = function (email, password) {
-  // попытаемся найти пользователя по почте
-  return this.findOne({ email }) // this — это модель User
-    .then((user) => {
-      // не нашёлся — отклоняем промис
-      if (!user) {
-        return Promise.reject(new Error('Неправильные почта или пароль'));
-      }
-
-      // нашёлся — сравниваем хеши
-      return bcrypt.compare(password, user.password)
-        .then((matched) => {
-          if (!matched) {
-            Promise.reject(new Error('Неправильные почта или пароль'));
-          }
-          return user; // теперь user доступен
-        });
     });
 };
 
