@@ -68,7 +68,7 @@ module.exports.createUser = (req, res) => {
     });
 };
 
-// обновляем данные пользователя
+// обновляем данные пользователяя
 module.exports.patchProfile = (req, res) => {
   const { name, about } = req.body; // получим из объекта запроса имя и описание пользовател
   // обновим имя найденного по _id пользователя
