@@ -1,10 +1,13 @@
+/* eslint-disable consistent-return */
 // это файл контроллеров
 
-const jwt = require('jsonwebtoken'); // импортируем модуль jsonwebtoken
+// eslint-disable-next-line import/no-unresolved
+// const jwt = require('jsonwebtoken'); // импортируем модуль jsonwebtoken
 const bcrypt = require('bcryptjs'); // импортируем bcrypt
 const User = require('../models/user');
 // const userSchema = require('../models/user');
-
+const SALT_ROUNDS = 10;
+// const JWT_SECRET = 'some-secret-key';
 const {
   created,
   badRequest,
@@ -40,34 +43,84 @@ module.exports.getCurrentUser = (req, res) => {
     });
 };
 
-// создает пользователя
+// // создает пользователя
+// module.exports.createUser = (req, res) => {
+//   const {
+//     name, about, avatar, email, password,
+//   } = req.body; // получим из объекта запроса
+//   // User.create({
+//   //   name, about, avatar, email, password,
+//   // });// создадим документ
+//   // на основе пришедших данных
+
+//   // Добавим код для хеширования в контроллер создания пользователя. За это отвечает метод hash
+//   bcrypt.hash(password, SALT_ROUNDS) // Метод принимает на вход два параметра:
+//   // пароль и длину так называемой «соли» — случайной строки,
+//   // которую метод добавит к паролю перед хешированем.
+//     .then((hash) => User.create({
+//       name,
+//       about,
+//       avatar,
+//       email,
+//       password: hash, // записываем хеш в базу
+//     }))
+//     .then((user) => res.status(created).send({ data: user })) // вернём записанные в базу данные
+//     .catch((err) => {
+//       if (err.name === 'ValidationError') {
+//         res.status(badRequest).send({ message: 'Данные введены не корректно' });
+//       } else {
+//         res.status(serverError).send({ message: err.message });
+//       }
+//     });
+// };
+
+// переписываем createUser работает по вебинару
+// регистрация
+// eslint-disable-next-line consistent-return
 module.exports.createUser = (req, res) => {
   const {
-    name, about, avatar, email, password,
-  } = req.body; // получим из объекта запроса
-  // User.create({
-  //   name, about, avatar, email, password,
-  // });// создадим документ
-  // на основе пришедших данных
+    name,
+    about,
+    avatar,
+    email,
+    password,
+  } = req.body;
+  // если емэйл и пароль отсутствует - возвращаем ошибку
+  if (!email || !password) {
+    return res.status(400).send({ message: 'Email или пароль не переданы' });
+  }
 
-  // Добавим код для хеширования в контроллер создания пользователя. За это отвечает метод hash
-  bcrypt.hash(password, 10) // Метод принимает на вход два параметра:
-  // пароль и длину так называемой «соли» — случайной строки,
-  // которую метод добавит к паролю перед хешированем.
-    .then((hash) => User.create({
-      name,
-      about,
-      avatar,
-      email,
-      password: hash, // записываем хеш в базу
-    }))
-    .then((user) => res.status(created).send({ data: user })) // вернём записанные в базу данные
-    .catch((err) => {
-      if (err.name === 'ValidationError') {
-        res.status(badRequest).send({ message: 'Данные введены не корректно' });
-      } else {
-        res.status(serverError).send({ message: err.message });
+  // если передан емэйл, который уже есть в БД - его зарегать не можем
+  // ищем в базе, существует ли пользователь с таким емэйлом или нет
+  // если переданного емэйла нет в БД - будет что-то делать с регистацией
+  // если переданный емэйл уже есть в БД  - возвращаем ошибку
+  User.findOne({ email })
+  // если переданного емэйла нет в БД - будет что-то делать с регистацией
+    .then((user) => {
+      if (user) {
+      // если уже есть пользователь с таким емэйлом - возращаем ошибку
+        res.status(409).send({ message: 'Такой пользователь уже существует' });
       }
+      bcrypt.hash(password, SALT_ROUNDS) // Метод принимает на вход два параметра:
+        .then((hash) => {
+          // создаем пользователя
+          User.create({
+            name,
+            about,
+            avatar,
+            email,
+            password: hash, // записываем хеш в базу,
+          })
+          // создаем пользователя
+          // вернём записанные в базу данные
+            .then((user) => res.status(created).send({ data: user }))
+          // пользователь не создан
+            .catch(() => res.status(500).send({ message: 'Internal Error' }));
+        })
+      // если переданный емэйл уже есть в БД  - возвращаем ошибку
+        .catch(() => {
+          res.status(500).send({ message: 'Internal Error' });
+        });
     });
 };
 
@@ -103,23 +156,55 @@ module.exports.createUser = (req, res) => {
 //     });
 // };
 
+// // это мой вариант логина
+// module.exports.login = (req, res) => {
+//   const { email, password } = req.body;
+//   return User.findUserByCredentials(email, password)
+//     .then(() => {
+//       const token = jwt.sign(
+//         { _id: 'd285e3dceed844f902650f40' },
+//         JWT_SECRET,
+//         { expiresIn: '7d' },
+//       );
+//       // токен будет просрочен через неделю после создания
+//       // вернём токен
+//       res.send({ token });
+//     })
+//     .catch((err) => {
+//     // ошибка аутентификации
+//       res
+//         .status(401)
+//         .send({ message: err.message });
+//     });
+// };
+
+// переписываем логин
+// аунтефикация
 module.exports.login = (req, res) => {
   const { email, password } = req.body;
-  return User.findUserByCredentials(email, password)
-    .then(() => {
-      const token = jwt.sign(
-        { _id: 'd285e3dceed844f902650f40' },
-        { expiresIn: '7d' },
-      );
-      // токен будет просрочен через неделю после создания
-      // вернём токен
-      res.send({ token });
+  // если емэйл и пароль отсутствует - возвращаем ошибку
+  if (!email || !password) {
+    return res.status(400).send({ message: 'Email или пароль не переданы' });
+  }
+  // ищем пользовтеля по емэйлу
+  User.findOne({ email })
+    .then((user) => {
+    // если пользователь не найден - возвращаем статус
+      if (!user) {
+        return res.status(403).send({ message: 'Такого пользователя не существует' });
+      }
+      // сравниваем пароль
+      // password-нам пришел, user.password-в БД в виде хэша
+      bcrypt.compare(password, user.password, (err, isValidPassword) => {
+        // если пароль невалидный
+        if (!isValidPassword) {
+          return res.status(401).send({ message: 'Пароль неверный' });
+        }
+        return res.status(200).send({ user: user.email });
+      });
     })
-    .catch((err) => {
-    // ошибка аутентификации
-      res
-        .status(401)
-        .send({ message: err.message });
+    .catch(() => {
+      res.status(500).send({ message: 'Internal Error' });
     });
 };
 
