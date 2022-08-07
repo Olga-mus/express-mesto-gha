@@ -77,6 +77,8 @@ module.exports.getCurrentUser = (req, res) => {
 // переписываем createUser работает по вебинару
 // регистрация
 // eslint-disable-next-line consistent-return
+
+// регистрация вебинар 40 поток
 module.exports.createUser = (req, res) => {
   const {
     name,
@@ -94,38 +96,59 @@ module.exports.createUser = (req, res) => {
   // ищем в базе, существует ли пользователь с таким емэйлом или нет
   // если переданного емэйла нет в БД - будет что-то делать с регистацией
   // если переданный емэйл уже есть в БД  - возвращаем ошибку
-  User.findOne({ email })
-  // если переданного емэйла нет в БД - будет что-то делать с регистацией
-    .then((user) => {
-      if (user) {
-      // если уже есть пользователь с таким емэйлом - возращаем ошибку
-        res.status(409).send({ message: 'Такой пользователь уже существует' });
-      }
-      bcrypt.hash(password, SALT_ROUNDS) // Метод принимает на вход два параметра:
-        .then((hash) => {
-          // создаем пользователя
-          User.create({
-            name,
-            about,
-            avatar,
-            email,
-            password: hash, // записываем хеш в базу,
-          })
-          // создаем пользователя
-          // вернём записанные в базу данные
-            .then((user) => res.status(created).send({ data: user }))
-          // пользователь не создан
-            .catch(() => res.status(500).send({ message: 'Internal Error' }));
-        })
-      // если переданный емэйл уже есть в БД  - возвращаем ошибку
-        .catch(() => {
-          res.status(500).send({ message: 'Internal Error' });
-        });
+  User.findOne({ email });
+  return bcrypt.hash(password, SALT_ROUNDS) // Метод принимает на вход два параметра:
+    .then((hash) => {
+      // создаем пользователя
+      User.create({
+        name,
+        about,
+        avatar,
+        email,
+        password: hash, // записываем хеш в базу,
+      })
+      // создаем пользователя
+      // вернём записанные в базу данные
+        .then((userData) => res.status(created).send({ data: userData }));
+      // пользователь не создан
+    })
+    // если переданный емэйл уже есть в БД  - возвращаем ошибку
+    .catch(() => {
+      res.status(500).send({ message: 'Internal Error' });
     });
 };
 
-// Создаём контроллер аутентификации
+// // вебинар по Наталье
+// module.exports.createUser = (req, res) => {
+//   const {
+//     name,
+//     about,
+//     avatar,
+//     email,
+//     password,
+//   } = req.body;
+//   if (!email || !password) {
+//     return res.status(400).send({ message: 'Email или пароль не переданы' });
+//   }
 
+//   User.create({
+//     name,
+//     about,
+//     avatar,
+//     email,
+//     password,
+//   })
+//     .then(() => {
+//       res.send({ message: 'Пользователь создан' });
+//     })
+//     .catch((err) => {
+//       console.log('YUYUYUYUYUYU');
+//       console.log(err);
+//       return res.status(500).res.send({ message: 'Что-то пошло не так' });
+//     });
+// };
+
+// Создаём контроллер аутентификации
 // module.exports.login = (req, res) => {
 //   const { email, password } = req.body;
 //   User.findOne({ email })
@@ -187,7 +210,7 @@ module.exports.login = (req, res) => {
     return res.status(400).send({ message: 'Email или пароль не переданы' });
   }
   // ищем пользовтеля по емэйлу
-  User.findOne({ email })
+  User.findOne({ email }).select('+password')
     .then((user) => {
     // если пользователь не найден - возвращаем статус
       if (!user) {
@@ -196,6 +219,7 @@ module.exports.login = (req, res) => {
       // сравниваем пароль
       // password-нам пришел, user.password-в БД в виде хэша
       bcrypt.compare(password, user.password, (err, isValidPassword) => {
+        console.log(user);
         // если пароль невалидный
         if (!isValidPassword) {
           return res.status(401).send({ message: 'Пароль неверный' });
