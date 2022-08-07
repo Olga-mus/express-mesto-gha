@@ -2,12 +2,12 @@
 // это файл контроллеров
 
 // eslint-disable-next-line import/no-unresolved
-// const jwt = require('jsonwebtoken'); // импортируем модуль jsonwebtoken
+const jwt = require('jsonwebtoken'); // импортируем модуль jsonwebtoken
 const bcrypt = require('bcryptjs'); // импортируем bcrypt
 const User = require('../models/user');
 // const userSchema = require('../models/user');
 const SALT_ROUNDS = 10;
-// const JWT_SECRET = 'some-secret-key';
+const JWT_SECRET = 'some-secret-key';
 const {
   created,
   badRequest,
@@ -219,12 +219,18 @@ module.exports.login = (req, res) => {
       // сравниваем пароль
       // password-нам пришел, user.password-в БД в виде хэша
       bcrypt.compare(password, user.password, (err, isValidPassword) => {
-        console.log(user);
         // если пароль невалидный
         if (!isValidPassword) {
           return res.status(401).send({ message: 'Пароль неверный' });
         }
-        return res.status(200).send({ user: user.email });
+
+        const token = jwt.sign(
+          { _id: user.id },
+          JWT_SECRET,
+          { expiresIn: '7d' },
+        );
+
+        return res.status(200).send({ token });
       });
     })
     .catch(() => {
