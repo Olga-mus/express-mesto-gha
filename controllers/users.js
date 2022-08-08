@@ -2,10 +2,12 @@
 // это файл контроллеров
 const bcrypt = require('bcryptjs'); // импортируем bcrypt
 
+// const jwt = require('jsonwebtoken'); // импортируем модуль jsonwebtoken
 const User = require('../models/user');
 
 const MONGO_DUPLICATE_ERROR_CODE = 11000;
 const SALT_ROUNDS = 10;
+const { generateToken } = require('../helpers/jwt');
 
 const {
   created,
@@ -23,6 +25,7 @@ module.exports.getUsers = (req, res) => {
 
 // Получаем текущего пользователя 404
 module.exports.getCurrentUser = (req, res) => {
+  console.log('USER ID', req.user);
   const { userId } = req.params;
   User.findById(userId)
     .orFail(() => {
@@ -135,16 +138,22 @@ module.exports.login = (req, res) => {
         err.statusCode = 403; // записываем о объект ошибки поле
         throw err; // оператор throw генерирует ошибку
       }
-      // сравниваем хэш с переданным паролем
-      return bcrypt.compare(password, user.password); // переданный пароль и паролт из БД
+      return Promise.all([
+        user,
+        bcrypt.compare(password, user.password), // переданный пароль и паролт из БД
+      ]);
     })
-    .then((isPasswordCorrect) => {
+    .then(([user, isPasswordCorrect]) => {
       if (!isPasswordCorrect) {
         const err = new Error('Неправильный Email или пароль'); // создаем объект ошибки
         err.statusCode = 403; // записываем о объект ошибки поле
         throw err; // оператор throw генерирует ошибку
       }
-      return res.send({ message: '123' });
+      return generateToken({ email: user.email });
+    })
+    .then((token) => {
+      console.log(token);
+      res.send({ token });
     })
     .catch((err) => {
       if (err.statusCode === 403) {
