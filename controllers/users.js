@@ -8,6 +8,8 @@ const User = require('../models/user');
 
 const { getJwtToken } = require('../utils/jwt');
 
+// const { isAutorised } = require('../utils/jwt');
+
 const SALT_ROUNDS = 10;
 const {
   created,
@@ -18,6 +20,14 @@ const {
 
 // Получаем всех пользователей 500
 module.exports.getUsers = (req, res) => {
+  // try {
+  //   if (!isAutorised(req.headers.authorization)) {
+  //     return res.status(401).send({ message: 'Недостаточно прав' });
+  //   }
+  // } catch (e) {
+  //   return res.status(500).send({ message: 'Internal Error' });
+  // }
+
   User.find({}) // найти вообще всех
     .then((users) => res.send({ data: users }))
     .catch((err) => res.status(serverError).send({ message: err.message }));

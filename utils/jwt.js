@@ -14,8 +14,9 @@ const getJwtToken = (id) => {
 };
 
 // авторизован пользователь или нет
+// eslint-disable-next-line arrow-body-style
 const isAutorised = (token) => {
-  jwt.verify(token, JWT_SECRET, (err, decoded) => { // в объекте decoded будет id
+  return jwt.verify(token, JWT_SECRET, (err, decoded) => { // в объекте decoded будет id
     if (err) return false;
     return User.findById(decoded.id)
       // eslint-disable-next-line arrow-body-style

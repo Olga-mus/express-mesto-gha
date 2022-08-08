@@ -27,7 +27,8 @@ app.listen(PORT);
 // авторизация auth
 // app.use('/users', auth, require('./routes/users'));
 // запускаем, при запросе на '/users' срабатывает роутер './routes/users'
-app.use('/users', auth, userRouter); // запускаем, при запросе на '/users' срабатывает роутер './routes/users'
+app.use('/users', auth, userRouter);
+// запускаем, при запросе на '/users' срабатывает роутер './routes/users'
 
 // app.use('/cards', auth, require('./routes/cards'));
 // запускаем, при запросе на '/cards' срабатывает роутер './routes/cards'
