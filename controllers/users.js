@@ -37,17 +37,61 @@ module.exports.getCurrentUser = (req, res) => {
 };
 
 // создает пользователя
+// module.exports.createUser = (req, res) => {
+// получим из объекта запроса имя и описание пользовател
+//   const { name, about, avatar } = req.body;
+//   User.create({ name, about, avatar }) // создадим документ на основе пришедших данных
+//     .then((user) => res.status(created).send({ data: user })) // вернём записанные в базу данные
+//     .catch((err) => {
+//       if (err.name === 'ValidationError') {
+//         res.status(badRequest).send({ message: 'Данные введены не корректно' });
+//       } else {
+//         res.status(serverError).send({ message: err.message });
+//       }
+//     });
+// };
+
+// дорабатываем контроллер создание пользователя
+// eslint-disable-next-line arrow-body-style
 module.exports.createUser = (req, res) => {
-  const { name, about, avatar } = req.body; // получим из объекта запроса имя и описание пользовател
-  User.create({ name, about, avatar }) // создадим документ на основе пришедших данных
-    .then((user) => res.status(created).send({ data: user })) // вернём записанные в базу данные
-    .catch((err) => {
-      if (err.name === 'ValidationError') {
-        res.status(badRequest).send({ message: 'Данные введены не корректно' });
-      } else {
-        res.status(serverError).send({ message: err.message });
+  const {
+    name,
+    about,
+    avatar,
+    email,
+    password,
+  } = req.body;
+  // если емэйл и пароль отсутствует - возвращаем ошибку
+  if (!email || !password) {
+    return res.status(400).send({ message: 'Email или пароль не переданы' });
+  }
+
+  // ищем пользователя по емэйлу, если нашли - делаем ошибку
+  User.findOne({ email })
+    .then((user) => {
+      if (user) {
+        res.status(409).send({ message: 'Email занят' });
       }
+      // если нет пользователя с таким емэйлом - создаем
+      return User.create({
+        name,
+        about,
+        avatar,
+        email,
+        password,
+      })
+        .then((newUser) => {
+          console.log(newUser);
+          res.send({ message: 'Пользователь создан' });
+        });
     });
+
+  // return res.send({ message: 'register' });
+};
+
+// eslint-disable-next-line arrow-body-style
+module.exports.login = (req, res) => {
+  return res.send({ message: 'login' });
 };
 
 // обновляем данные пользователя
