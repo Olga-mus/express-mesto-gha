@@ -1,5 +1,11 @@
+/* eslint-disable consistent-return */
 // это файл контроллеров
+const bcrypt = require('bcryptjs'); // импортируем bcrypt
+
 const User = require('../models/user');
+
+const MONGO_DUPLICATE_ERROR_CODE = 11000;
+const SALT_ROUNDS = 10;
 
 const {
   created,
@@ -66,25 +72,47 @@ module.exports.createUser = (req, res) => {
     return res.status(400).send({ message: 'Email или пароль не переданы' });
   }
 
-  // ищем пользователя по емэйлу, если нашли - делаем ошибку
-  User.findOne({ email })
-    .then((user) => {
-      if (user) {
-        res.status(409).send({ message: 'Email занят' });
-      }
-      // если нет пользователя с таким емэйлом - создаем
+  bcrypt
+    .hash(password, SALT_ROUNDS)
+    .then((hash) => {
+      console.log(hash);
       return User.create({
         name,
         about,
         avatar,
         email,
-        password,
-      })
-        .then((newUser) => {
-          console.log(newUser);
-          res.send({ message: 'Пользователь создан' });
-        });
+        password: hash, // записываем хеш в базу,
+      });
+    })
+    .then(() => {
+      res.send({ message: 'Пользователь создан' });
+    })
+    .catch((err) => {
+      if (err.code === MONGO_DUPLICATE_ERROR_CODE) {
+        res.status(500).send({ message: 'Email занят' });
+      }
+      res.status(409).send({ message: 'Что-то пошло не так' });
     });
+
+  // // ищем пользователя по емэйлу, если нашли - делаем ошибку
+  // User.findOne({ email })
+  //   .then((user) => {
+  //     if (user) {
+  //       res.status(409).send({ message: 'Email занят' });
+  //     }
+  //     // если нет пользователя с таким емэйлом - создаем
+  //     return User.create({
+  //       name,
+  //       about,
+  //       avatar,
+  //       email,
+  //       password,
+  //     })
+  //       .then((newUser) => {
+  //         console.log(newUser);
+  //         res.send({ message: 'Пользователь создан' });
+  //       });
+  //   });
 
   // return res.send({ message: 'register' });
 };
