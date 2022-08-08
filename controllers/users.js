@@ -129,22 +129,27 @@ module.exports.login = (req, res) => {
     .findOne({ email })
     .select('+password')
     .then((user) => {
-      console.log(user);
       // если нет пользователя
       if (!user) {
-        res.status(403).send({ message: 'Неправильный Email или пароль' });
+        const err = new Error('Неправильный Email или пароль'); // создаем объект ошибки
+        err.statusCode = 403; // записываем о объект ошибки поле
+        throw err; // оператор throw генерирует ошибку
       }
       // сравниваем хэш с переданным паролем
       return bcrypt.compare(password, user.password); // переданный пароль и паролт из БД
     })
     .then((isPasswordCorrect) => {
       if (!isPasswordCorrect) {
-        return res.status(403).send({ message: 'Неправильный Email или пароль' });
+        const err = new Error('Неправильный Email или пароль'); // создаем объект ошибки
+        err.statusCode = 403; // записываем о объект ошибки поле
+        throw err; // оператор throw генерирует ошибку
       }
-      console.log('password!');
       return res.send({ message: '123' });
     })
     .catch((err) => {
+      if (err.statusCode === 403) {
+        return res.status(403).send({ message: err.message });
+      }
       res.status(500).send({ message: 'Что-то пошло не так' });
     });
 };
