@@ -2,11 +2,18 @@ const { checkToken } = require('../helpers/jwt');
 
 const User = require('../models/user');
 
+const throwUnauthorizedError = () => {
+  const error = new Error('Авторизуйтесь для доступа');// создаем объект ошибки
+  error.statusCode = 401; // записываем о объект ошибки поле
+  throw error; // оператор throw генерирует ошибку
+};
+
 // eslint-disable-next-line consistent-return
 const isAuthorized = (req, res, next) => {
   const auth = req.headers.authorization;
   if (!auth) {
-    return res.status(401).send({ message: 'Авторизуйтесь для доступа' });
+    throwUnauthorizedError();
+    // return res.status(401).send({ message: 'Авторизуйтесь для доступа' });
   }
 
   const token = auth.replace('Bearer ', '');
@@ -18,16 +25,18 @@ const isAuthorized = (req, res, next) => {
       // eslint-disable-next-line consistent-return
       .then((user) => {
         if (!user) {
-          return res.status(401).send({ message: 'Авторизуйтесь для доступа' });
+          throwUnauthorizedError();
+          // return res.status(401).send({ message: 'Авторизуйтесь для доступа' });
         }
         req.user = { id: user._id };
         next();
-      })
-      .catch((err) => {
-        res.status(500).send({ message: 'Что-то пошло не так' });
       });
+  // .catch((err) => {
+  //   res.status(500).send({ message: 'Что-то пошло не так' });
+  // });
   } catch (err) {
-    return res.status(401).send({ message: 'Авторизуйтесь для доступа' });
+    throwUnauthorizedError();
+    // return res.status(401).send({ message: 'Авторизуйтесь для доступа' });
   }
 };
 module.exports = { isAuthorized };

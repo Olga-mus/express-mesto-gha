@@ -25,7 +25,6 @@ module.exports.getUsers = (req, res) => {
 
 // Получаем текущего пользователя 404
 module.exports.getCurrentUser = (req, res) => {
-  console.log('USER ID', req.user);
   const { userId } = req.params;
   User.findById(userId)
     .orFail(() => {
@@ -72,13 +71,16 @@ module.exports.createUser = (req, res) => {
   } = req.body;
   // если емэйл и пароль отсутствует - возвращаем ошибку
   if (!email || !password) {
-    return res.status(400).send({ message: 'Email или пароль не переданы' });
+    const error = new Error('Email или пароль не переданы');// создаем объект ошибки
+    error.statusCode = 400; // записываем о объект ошибки поле
+    throw error; // оператор throw генерирует ошибку
+    // return res.status(400).send({ message: 'Email или пароль не переданы' });
   }
 
   bcrypt
     .hash(password, SALT_ROUNDS)
+    // eslint-disable-next-line arrow-body-style
     .then((hash) => {
-      console.log(hash);
       return User.create({
         name,
         about,
@@ -93,9 +95,13 @@ module.exports.createUser = (req, res) => {
     }))
     .catch((err) => {
       if (err.code === MONGO_DUPLICATE_ERROR_CODE) {
-        res.status(409).send({ message: 'Email занят' });
+        const error = new Error('Email занят');// создаем объект ошибки
+        error.statusCode = 409; // записываем о объект ошибки поле
+        throw error; // оператор throw генерирует ошибку
+        // res.status(409).send({ message: 'Email занят' });
       }
-      res.status(500).send({ message: 'Что-то пошло не так' });
+      throw err;
+      // res.status(500).send({ message: 'Что-то пошло не так' });
     });
 
   // // ищем пользователя по емэйлу, если нашли - делаем ошибку
@@ -126,7 +132,10 @@ module.exports.login = (req, res) => {
   const { email, password } = req.body;
   // если емэйл и пароль отсутствует - возвращаем ошибку
   if (!email || !password) {
-    return res.status(400).send({ message: 'Email или пароль не переданы' });
+    const error = new Error('Email или пароль не переданы');// создаем объект ошибки
+    error.statusCode = 400; // записываем о объект ошибки поле
+    throw error; // оператор throw генерирует ошибку
+    // return res.status(400).send({ message: 'Email или пароль не переданы' });
   }
   User
     .findOne({ email })
@@ -152,7 +161,6 @@ module.exports.login = (req, res) => {
       return generateToken({ email: user.email });
     })
     .then((token) => {
-      console.log(token);
       res.send({ token });
     })
     .catch((err) => {

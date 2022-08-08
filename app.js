@@ -32,3 +32,12 @@ app.post('/signup', createUser);
 app.post('/signin', login);
 
 app.use(pageNotFound);
+
+// eslint-disable-next-line consistent-return
+app.use((err, req, res, next) => {
+  if (err.statusCode) {
+    return res.status(err.statusCode).send({ message: err.message });
+  }
+  console.error(err.stack);
+  res.status(500).send({ message: 'Что-то пошло не так' });
+});
