@@ -84,14 +84,15 @@ module.exports.createUser = (req, res) => {
         password: hash, // записываем хеш в базу,
       });
     })
-    .then(() => {
-      res.send({ message: 'Пользователь создан' });
-    })
+    // пользователь создан
+    .then((user) => res.status(201).send({
+      data: user,
+    }))
     .catch((err) => {
       if (err.code === MONGO_DUPLICATE_ERROR_CODE) {
-        res.status(500).send({ message: 'Email занят' });
+        res.status(409).send({ message: 'Email занят' });
       }
-      res.status(409).send({ message: 'Что-то пошло не так' });
+      res.status(500).send({ message: 'Что-то пошло не так' });
     });
 
   // // ищем пользователя по емэйлу, если нашли - делаем ошибку
@@ -119,7 +120,33 @@ module.exports.createUser = (req, res) => {
 
 // eslint-disable-next-line arrow-body-style
 module.exports.login = (req, res) => {
-  return res.send({ message: 'login' });
+  const { email, password } = req.body;
+  // если емэйл и пароль отсутствует - возвращаем ошибку
+  if (!email || !password) {
+    return res.status(400).send({ message: 'Email или пароль не переданы' });
+  }
+  User
+    .findOne({ email })
+    .select('+password')
+    .then((user) => {
+      console.log(user);
+      // если нет пользователя
+      if (!user) {
+        res.status(403).send({ message: 'Неправильный Email или пароль' });
+      }
+      // сравниваем хэш с переданным паролем
+      return bcrypt.compare(password, user.password); // переданный пароль и паролт из БД
+    })
+    .then((isPasswordCorrect) => {
+      if (!isPasswordCorrect) {
+        return res.status(403).send({ message: 'Неправильный Email или пароль' });
+      }
+      console.log('password!');
+      return res.send({ message: '123' });
+    })
+    .catch((err) => {
+      res.status(500).send({ message: 'Что-то пошло не так' });
+    });
 };
 
 // обновляем данные пользователя
