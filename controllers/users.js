@@ -14,6 +14,8 @@ const {
   badRequest,
   notFound,
   serverError,
+  conflict,
+  forbidden,
 } = require('../utils/statusResponse');
 
 // Получаем всех пользователей 500
@@ -72,7 +74,7 @@ module.exports.createUser = (req, res) => {
   // если емэйл и пароль отсутствует - возвращаем ошибку
   if (!email || !password) {
     const error = new Error('Email или пароль не переданы');// создаем объект ошибки
-    error.statusCode = 400; // записываем о объект ошибки поле
+    error.statusCode = badRequest; // записываем о объект ошибки поле
     throw error; // оператор throw генерирует ошибку
     // return res.status(400).send({ message: 'Email или пароль не переданы' });
   }
@@ -90,13 +92,13 @@ module.exports.createUser = (req, res) => {
       });
     })
     // пользователь создан
-    .then((user) => res.status(201).send({
+    .then((user) => res.status(created).send({
       data: user,
     }))
     .catch((err) => {
       if (err.code === MONGO_DUPLICATE_ERROR_CODE) {
         const error = new Error('Email занят');// создаем объект ошибки
-        error.statusCode = 409; // записываем о объект ошибки поле
+        error.statusCode = conflict; // записываем о объект ошибки поле
         throw error; // оператор throw генерирует ошибку
         // res.status(409).send({ message: 'Email занят' });
       }
@@ -133,7 +135,7 @@ module.exports.login = (req, res) => {
   // если емэйл и пароль отсутствует - возвращаем ошибку
   if (!email || !password) {
     const error = new Error('Email или пароль не переданы');// создаем объект ошибки
-    error.statusCode = 400; // записываем о объект ошибки поле
+    error.statusCode = badRequest; // записываем о объект ошибки поле
     throw error; // оператор throw генерирует ошибку
     // return res.status(400).send({ message: 'Email или пароль не переданы' });
   }
@@ -144,7 +146,7 @@ module.exports.login = (req, res) => {
       // если нет пользователя
       if (!user) {
         const err = new Error('Неправильный Email или пароль'); // создаем объект ошибки
-        err.statusCode = 403; // записываем о объект ошибки поле
+        err.statusCode = forbidden; // записываем о объект ошибки поле
         throw err; // оператор throw генерирует ошибку
       }
       return Promise.all([
@@ -155,20 +157,20 @@ module.exports.login = (req, res) => {
     .then(([user, isPasswordCorrect]) => {
       if (!isPasswordCorrect) {
         const err = new Error('Неправильный Email или пароль'); // создаем объект ошибки
-        err.statusCode = 403; // записываем о объект ошибки поле
+        err.statusCode = forbidden; // записываем о объект ошибки поле
         throw err; // оператор throw генерирует ошибку
       }
       return generateToken({ email: user.email });
     })
     .then((token) => {
       res.send({ token });
-    })
-    .catch((err) => {
-      if (err.statusCode === 403) {
-        return res.status(403).send({ message: err.message });
-      }
-      res.status(500).send({ message: 'Что-то пошло не так' });
     });
+  // .catch((err) => {
+  //   if (err.statusCode === 403) {
+  //     return res.status(403).send({ message: err.message });
+  //   }
+  //   res.status(500).send({ message: 'Что-то пошло не так' });
+  // });
 };
 
 // обновляем данные пользователя

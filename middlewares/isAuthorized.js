@@ -1,10 +1,19 @@
 const { checkToken } = require('../helpers/jwt');
 
 const User = require('../models/user');
+const {
+  created,
+  badRequest,
+  notFound,
+  serverError,
+  conflict,
+  forbidden,
+  unauthorized,
+} = require('../utils/statusResponse');
 
 const throwUnauthorizedError = () => {
   const error = new Error('Авторизуйтесь для доступа');// создаем объект ошибки
-  error.statusCode = 401; // записываем о объект ошибки поле
+  error.statusCode = unauthorized; // записываем о объект ошибки поле
   throw error; // оператор throw генерирует ошибку
 };
 
