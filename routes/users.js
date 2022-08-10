@@ -2,12 +2,16 @@ const router = require('express').Router(); // создали роутер
 
 module.exports = router; // экспортировали роутер
 
+const { validateCurrentUser, validatePatchUserProfile, validatepatchAvatar } = require('../middlewares/validation');
+
 const {
-  getUsers, getCurrentUser, createUser, patchProfile, patchAvatar,
+  getUsers, getCurrentUser, patchProfile, patchAvatar,
 } = require('../controllers/users');
 
 router.get('/', getUsers);
-router.get('/:userId', getCurrentUser);
-router.post('/', createUser);
-router.patch('/me', patchProfile);
-router.patch('/me/avatar', patchAvatar);
+
+router.get('/:userId', validateCurrentUser, getCurrentUser);
+
+router.patch('/me', validatePatchUserProfile, patchProfile);
+
+router.patch('/me/avatar', validatepatchAvatar, patchAvatar);
