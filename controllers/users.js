@@ -10,6 +10,7 @@ const { generateToken } = require('../helpers/jwt');
 const BadRequest = require('../errors/error400');
 const Forbidden = require('../errors/error403');
 const NotFound = require('../errors/error404');
+const Unauthorized = require('../errors/error401');
 const Conflict = require('../errors/error409');
 const InternalServerError = require('../errors/error500');
 
@@ -119,7 +120,7 @@ module.exports.login = (req, res, next) => {
     .then((user) => {
       // если нет пользователя
       if (!user) {
-        next(new Forbidden('Неправильный Email или пароль'));
+        next(new Unauthorized('Неправильный Email или пароль'));
         // const err = new Error('Неправильный Email или пароль'); // создаем объект ошибки
         // err.statusCode = forbidden; // записываем о объект ошибки поле
         // throw err; // оператор throw генерирует ошибку
