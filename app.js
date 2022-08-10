@@ -4,7 +4,6 @@ const mongoose = require('mongoose');
 const bodyParser = require('body-parser');
 // const authorization = require('./middlewares/authorization');
 const { errors } = require('celebrate');
-const { celebrate, Joi } = require('celebrate');
 const pageNotFound = require('./middlewares/pageNotFound');
 const { createUser, login } = require('./controllers/users');
 const userRouter = require('./routes/users');
