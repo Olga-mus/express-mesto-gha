@@ -28,7 +28,7 @@ module.exports.getUsers = (req, res, next) => {
     .catch(next);
 };
 
-// Получаем текущего пользователя 404
+// Получаем текущего пользователя по id 404
 module.exports.getCurrentUser = (req, res, next) => {
   const { userId } = req.params;
   User.findById(userId)
@@ -52,6 +52,23 @@ module.exports.getCurrentUser = (req, res, next) => {
         // res.status(serverError).send({ message: err.message });
         // next(err);
         next(new NotFound('Такого пользователя не существует'));
+      }
+    });
+};
+
+// получаем инф о текущем пользователе
+module.exports.getCurrentUserProfile = (req, res, next) => {
+  User.findById(req.user.id)
+    .then((user) => {
+      res
+        .status(ok)
+        .send({ data: user });
+    })
+    .catch((err) => {
+      if (err.name === 'ValidationError') {
+        next(new BadRequest('Данные введены не корректно'));
+      } else {
+        next(err);
       }
     });
 };
