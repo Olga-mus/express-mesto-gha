@@ -50,7 +50,8 @@ module.exports.getCurrentUser = (req, res, next) => {
       //   next(new NotFound('Такого пользователя нет'));
       } else {
         // res.status(serverError).send({ message: err.message });
-        next(err);
+        // next(err);
+        next(new NotFound('Такого пользователя не существует'));
       }
     });
 };
