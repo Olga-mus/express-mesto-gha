@@ -10,10 +10,10 @@ const {
 
 router.get('/', getUsers);
 
-router.get('/:userId', validateCurrentUser, getCurrentUser);
-
 router.patch('/me', validatePatchUserProfile, patchProfile);
 
 router.patch('/me/avatar', validatepatchAvatar, patchAvatar);
 
 router.get('/me', getCurrentUserProfile);
+
+router.get('/:userId', validateCurrentUser, getCurrentUser);

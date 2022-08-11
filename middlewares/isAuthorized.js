@@ -28,7 +28,7 @@ const isAuthorized = (req, res, next) => {
           // throwUnauthorizedError();
           // return res.status(401).send({ message: 'Авторизуйтесь для доступа' });
         }
-        req.user = { id: user._id };
+        req.user = { id: user._id.toString() };
         next();
       });
   // .catch((err) => {
