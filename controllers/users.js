@@ -56,9 +56,11 @@ module.exports.getCurrentUser = (req, res, next) => {
     });
 };
 
-// получаем инф о текущем пользователе
+// получаем инф о текущем пользователе новый
 module.exports.getCurrentUserProfile = (req, res, next) => {
-  User.findById(req.user.id)
+  console.log('GHGHGHGHG');
+  const id = req.user._id;
+  User.findById(id)
     .then((user) => {
       res
         .status(ok)
@@ -106,7 +108,11 @@ module.exports.createUser = (req, res, next) => {
     })
     // пользователь создан
     .then((user) => res.status(created).send({
-      data: user,
+      _id: user._id,
+      name: user.name,
+      about: user.about,
+      avatar: user.avatar,
+      email: user.email,
     }))
     .catch((err) => {
       if (err.code === MONGO_DUPLICATE_ERROR_CODE) {
