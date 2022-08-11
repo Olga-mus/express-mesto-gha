@@ -29,8 +29,8 @@ const validateAuthorization = celebrate({
   body: Joi.object().keys({
     email: Joi
       .string()
-      .required()
-      .email(),
+      .email()
+      .required(),
     password: Joi
       .string()
       .required(),

@@ -28,7 +28,7 @@ module.exports.getUsers = (req, res, next) => {
     .catch(next);
 };
 
-// Получаем текущего пользователя 404
+// Получаем текущего пользователя по id 404
 module.exports.getCurrentUser = (req, res, next) => {
   const { userId } = req.params;
   User.findById(userId)
@@ -52,6 +52,25 @@ module.exports.getCurrentUser = (req, res, next) => {
         // res.status(serverError).send({ message: err.message });
         // next(err);
         next(new NotFound('Такого пользователя не существует'));
+      }
+    });
+};
+
+// получаем инф о текущем пользователе новый
+module.exports.getCurrentUserProfile = (req, res, next) => {
+  console.log('GHGHGHGHG');
+  const id = req.user._id;
+  User.findById(id)
+    .then((user) => {
+      res
+        .status(ok)
+        .send({ data: user });
+    })
+    .catch((err) => {
+      if (err.name === 'ValidationError') {
+        next(new BadRequest('Данные введены не корректно'));
+      } else {
+        next(err);
       }
     });
 };
@@ -89,7 +108,11 @@ module.exports.createUser = (req, res, next) => {
     })
     // пользователь создан
     .then((user) => res.status(created).send({
-      data: user,
+      _id: user._id,
+      name: user.name,
+      about: user.about,
+      avatar: user.avatar,
+      email: user.email,
     }))
     .catch((err) => {
       if (err.code === MONGO_DUPLICATE_ERROR_CODE) {
