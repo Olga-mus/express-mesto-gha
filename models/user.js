@@ -1,5 +1,9 @@
 const mongoose = require('mongoose');
 
+const { urlRegExp } = require('../middlewares/validation');
+
+const { isEmail } = require('validator');
+
 const userSchema = new mongoose.Schema({
   name: {
     // у пользователя есть имя — опишем требования к имени в схеме :
@@ -20,11 +24,13 @@ const userSchema = new mongoose.Schema({
     type: String,
     required: true, // оно должно быть у каждого пользователя, так что имя — обязательное поле
     default: 'https://pictures.s3.yandex.net/resources/jacques-cousteau_1604399756.png',
+    match: [urlRegExp, 'Введите корректный URL'],
   },
   email: {
     type: String,
     unique: true,
     required: true,
+    validate: [isEmail, 'Введите корректный email'],
   },
   password: {
     type: String,

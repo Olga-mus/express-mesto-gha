@@ -51,7 +51,7 @@ module.exports.getCurrentUser = (req, res, next) => {
       } else {
         // res.status(serverError).send({ message: err.message });
         // next(err);
-        next(new NotFound('Такого пользователя не существует'));
+        next(new InternalServerError('Такого пользователя не существует'));
       }
     });
 };
@@ -77,7 +77,6 @@ module.exports.getCurrentUser = (req, res, next) => {
 
 // получаем инф о текущем пользователе
 module.exports.getCurrentUserProfile = (req, res, next) => {
-  console.log('GHGHGHGHG');
   const { id } = req.user;
 
   User.findById(id)
@@ -97,13 +96,6 @@ module.exports.createUser = (req, res, next) => {
     password,
   } = req.body;
   // если емэйл и пароль отсутствует - возвращаем ошибку
-  if (!email || !password) {
-    // const error = new Error('Email или пароль не переданы');// создаем объект ошибки
-    // error.statusCode = badRequest; // записываем о объект ошибки поле
-    // throw error; // оператор throw генерирует ошибку
-    next(new BadRequest('Email или пароль не переданы'));
-    // return res.status(400).send({ message: 'Email или пароль не переданы' });
-  }
 
   bcrypt
     .hash(password, SALT_ROUNDS)
@@ -126,12 +118,16 @@ module.exports.createUser = (req, res, next) => {
       email: user.email,
     }))
     .catch((err) => {
-      if (err.code === MONGO_DUPLICATE_ERROR_CODE) {
+      if (err.name === 'ValidationError') {
+        next(new BadRequest('Невалидные данные пользователя'));
+      } else if (err.code === MONGO_DUPLICATE_ERROR_CODE) {
         next(new Conflict('Email занят'));
         // const error = new Error('Email занят');// создаем объект ошибки
         // error.statusCode = conflict; // записываем о объект ошибки поле
         // throw error; // оператор throw генерирует ошибку
         // res.status(409).send({ message: 'Email занят' });
+      } else {
+        next(err);
       }
       // throw err;
       // res.status(500).send({ message: 'Что-то пошло не так' });
@@ -141,21 +137,13 @@ module.exports.createUser = (req, res, next) => {
 // eslint-disable-next-line arrow-body-style
 module.exports.login = (req, res, next) => {
   const { email, password } = req.body;
-  // если емэйл и пароль отсутствует - возвращаем ошибку
-  if (!email || !password) {
-    // const error = new Error('Email или пароль не переданы');// создаем объект ошибки
-    // error.statusCode = badRequest; // записываем о объект ошибки поле
-    // throw error; // оператор throw генерирует ошибку
-    next(new BadRequest('Email или пароль не переданы'));
-    // return res.status(400).send({ message: 'Email или пароль не переданы' });
-  }
   User
     .findOne({ email })
     .select('+password')
     .then((user) => {
       // если нет пользователя
       if (!user) {
-        next(new Unauthorized('Неправильный Email или пароль'));
+        throw next(new Unauthorized('Неправильный Email или пароль'));
         // const err = new Error('Неправильный Email или пароль'); // создаем объект ошибки
         // err.statusCode = forbidden; // записываем о объект ошибки поле
         // throw err; // оператор throw генерирует ошибку
@@ -167,16 +155,17 @@ module.exports.login = (req, res, next) => {
     })
     .then(([user, isPasswordCorrect]) => {
       if (!isPasswordCorrect) {
-        next(new Forbidden('Неправильный Email или пароль'));
+        next(new Unauthorized('Неправильный Email или пароль'));
         // const err = new Error('Неправильный Email или пароль'); // создаем объект ошибки
         // err.statusCode = forbidden; // записываем о объект ошибки поле
         // throw err; // оператор throw генерирует ошибку
       }
-      return generateToken({ email: user.email });
+      return generateToken({ _id: user._id });
     })
     .then((token) => {
       res.send({ token });
-    });
+    })
+    .catch(next);
   // .catch((err) => {
   //   if (err.statusCode === 403) {
   //     return res.status(403).send({ message: err.message });

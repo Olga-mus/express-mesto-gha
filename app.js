@@ -2,7 +2,6 @@
 const express = require('express');
 const mongoose = require('mongoose');
 const bodyParser = require('body-parser');
-// const authorization = require('./middlewares/authorization');
 const { errors } = require('celebrate');
 const pageNotFound = require('./middlewares/pageNotFound');
 const { createUser, login } = require('./controllers/users');
@@ -25,7 +24,6 @@ mongoose.connect('mongodb://localhost:27017/mestodb');
 
 // app.use(authorization);
 
-app.listen(PORT);
 
 // app.use('/users', isAuthorized, userRouter);
 app.use('/users', isAuthorized, userRouter);
@@ -50,7 +48,8 @@ app.use((err, req, res, next) => {
   if (err.statusCode) {
     return res.status(err.statusCode).send({ message: err.message });
   }
-  console.error(err.stack);
   res.status(500).send({ message: 'Что-то пошло не так' });
   next();
 });
+
+app.listen(PORT);
