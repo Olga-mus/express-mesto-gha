@@ -56,23 +56,34 @@ module.exports.getCurrentUser = (req, res, next) => {
     });
 };
 
-// получаем инф о текущем пользователе новый
+// // получаем инф о текущем пользователе новый
+// module.exports.getCurrentUserProfile = (req, res, next) => {
+//   console.log('GHGHGHGHG');
+//   const id = req.user._id;
+//   User.findById(id)
+//     .then((user) => {
+//       res
+//         .status(ok)
+//         .send({ data: user });
+//     })
+//     .catch((err) => {
+//       if (err.name === 'ValidationError') {
+//         next(new BadRequest('Данные введены не корректно'));
+//       } else {
+//         next(err);
+//       }
+//     });
+// };
+
+// получаем инф о текущем пользователе
 module.exports.getCurrentUserProfile = (req, res, next) => {
   console.log('GHGHGHGHG');
-  const id = req.user._id;
+  const { id } = req.user;
+
   User.findById(id)
-    .then((user) => {
-      res
-        .status(ok)
-        .send({ data: user });
-    })
-    .catch((err) => {
-      if (err.name === 'ValidationError') {
-        next(new BadRequest('Данные введены не корректно'));
-      } else {
-        next(err);
-      }
-    });
+    .orFail(() => new NotFound('Пользователь не существует'))
+    .then((user) => res.send(user))
+    .catch(next);
 };
 
 // дорабатываем контроллер создание пользователя
