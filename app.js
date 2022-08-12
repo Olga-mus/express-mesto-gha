@@ -24,7 +24,6 @@ mongoose.connect('mongodb://localhost:27017/mestodb');
 
 // app.use(authorization);
 
-
 // app.use('/users', isAuthorized, userRouter);
 app.use('/users', isAuthorized, userRouter);
 // запускаем, при запросе на '/users' срабатывает роутер './routes/users'
