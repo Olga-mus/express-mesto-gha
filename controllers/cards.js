@@ -31,10 +31,13 @@ module.exports.deleteCurrentCard = (req, res, next) => {
         next(new Forbidden('Нельзя удалить эту карточку'));
         return;
       }
-      card.remove();
-      res
-        .status(ok)
-        .send({ data: card });
+      card.remove()
+        .then(() => {
+          res.status(200).send({ message: 'Карточка успешно удалена' });
+        });
+      // res
+      //   .status(ok)
+      //   .send({ data: card });
     })
     .catch((err) => {
       if (err.name === 'CastError') {

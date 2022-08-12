@@ -144,13 +144,18 @@ module.exports.login = (req, res, next) => {
       // если нет пользователя
       if (!user) {
         throw next(new Unauthorized('Неправильный Email или пароль'));
-        // const err = new Error('Неправильный Email или пароль'); // создаем объект ошибки
-        // err.statusCode = forbidden; // записываем о объект ошибки поле
-        // throw err; // оператор throw генерирует ошибку
       }
+      // return Promise.all([
+      //   user,
+      //   bcrypt.compare(password, user.password), // переданный пароль и паролт из БД
+      // ]);
       return Promise.all([
-        user,
-        bcrypt.compare(password, user.password), // переданный пароль и паролт из БД
+        bcrypt.compare(password, user.password), // переданный пароль и пароль из БД
+        if (password === user.password) {
+          return user;
+        } else {
+          throw next(new BadRequest('Неправильный пароль'));
+        }
       ]);
     })
     .then(([user, isPasswordCorrect]) => {
