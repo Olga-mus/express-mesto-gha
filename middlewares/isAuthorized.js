@@ -11,8 +11,7 @@ const isAuthorized = (req, res, next) => {
     // throwUnauthorizedError();
     next(new Unauthorized('Авторизуйтесь для доступа'));
 
-    return; // ???
-    // return res.status(401).send({ message: 'Авторизуйтесь для доступа' });
+    return;
   }
 
   const token = auth.replace('Bearer ', '');
@@ -25,19 +24,12 @@ const isAuthorized = (req, res, next) => {
       .then((user) => {
         if (!user) {
           next(new Unauthorized('Авторизуйтесь для доступа'));
-          // throwUnauthorizedError();
-          // return res.status(401).send({ message: 'Авторизуйтесь для доступа' });
         }
         req.user = { id: user._id.toString() };
         next();
       });
-  // .catch((err) => {
-  //   res.status(500).send({ message: 'Что-то пошло не так' });
-  // });
   } catch (err) {
     next(err);
-    // throwUnauthorizedError();
-    // return res.status(401).send({ message: 'Авторизуйтесь для доступа' });
   }
 };
 module.exports = { isAuthorized };

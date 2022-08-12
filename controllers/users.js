@@ -2,13 +2,11 @@
 // это файл контроллеров
 const bcrypt = require('bcryptjs'); // импортируем bcrypt
 
-// const jwt = require('jsonwebtoken'); // импортируем модуль jsonwebtoken
 const User = require('../models/user');
 
 const SALT_ROUNDS = 10;
 const { generateToken } = require('../helpers/jwt');
 const BadRequest = require('../errors/error400');
-const Forbidden = require('../errors/error403');
 const NotFound = require('../errors/error404');
 const Unauthorized = require('../errors/error401');
 const Conflict = require('../errors/error409');
@@ -24,7 +22,6 @@ const {
 module.exports.getUsers = (req, res, next) => {
   User.find({}) // найти вообще всех
     .then((users) => res.send({ data: users }))
-    // .catch((err) => res.status(serverError).send({ message: err.message }));
     .catch(next);
 };
 
@@ -35,45 +32,16 @@ module.exports.getCurrentUser = (req, res, next) => {
     .orFail(() => {
       // eslint-disable-next-line no-new
       new NotFound('Нет пользователя с таким id');
-      // const error = new Error('Нет пользователя с таким id');
-      // error.statusCode = notFound;
-      // throw error;
     })
     .then((users) => res.send({ data: users }))
     .catch((err) => {
       if (err.name === 'CastError') {
-        // res.status(badRequest).send({ message: 'Невалидный идентификатор для пользователя' });
         next(new BadRequest('Невалидный идентификатор для пользователя'));
-      // }
-      // else if (err.statusCode === notFound) {
-      //   // res.status(notFound).send({ message: 'Такого пользователя нет' });
-      //   next(new NotFound('Такого пользователя нет'));
       } else {
-        // res.status(serverError).send({ message: err.message });
-        // next(err);
         next(new InternalServerError('Такого пользователя не существует'));
       }
     });
 };
-
-// // получаем инф о текущем пользователе новый
-// module.exports.getCurrentUserProfile = (req, res, next) => {
-//   console.log('GHGHGHGHG');
-//   const id = req.user._id;
-//   User.findById(id)
-//     .then((user) => {
-//       res
-//         .status(ok)
-//         .send({ data: user });
-//     })
-//     .catch((err) => {
-//       if (err.name === 'ValidationError') {
-//         next(new BadRequest('Данные введены не корректно'));
-//       } else {
-//         next(err);
-//       }
-//     });
-// };
 
 // получаем инф о текущем пользователе
 module.exports.getCurrentUserProfile = (req, res, next) => {
@@ -89,11 +57,7 @@ module.exports.getCurrentUserProfile = (req, res, next) => {
 // eslint-disable-next-line arrow-body-style
 module.exports.createUser = (req, res, next) => {
   const {
-    name,
-    about,
-    avatar,
-    email,
-    password,
+    name, about, avatar, email, password,
   } = req.body;
   // если емэйл и пароль отсутствует - возвращаем ошибку
 
@@ -122,67 +86,50 @@ module.exports.createUser = (req, res, next) => {
         next(new BadRequest('Невалидные данные пользователя'));
       } else if (err.code === MONGO_DUPLICATE_ERROR_CODE) {
         next(new Conflict('Email занят'));
-        // const error = new Error('Email занят');// создаем объект ошибки
-        // error.statusCode = conflict; // записываем о объект ошибки поле
-        // throw error; // оператор throw генерирует ошибку
-        // res.status(409).send({ message: 'Email занят' });
       } else {
         next(err);
       }
-      // throw err;
-      // res.status(500).send({ message: 'Что-то пошло не так' });
     });
 };
 
-// eslint-disable-next-line arrow-body-style
+// логин
 module.exports.login = (req, res, next) => {
   const { email, password } = req.body;
-  User
-    .findOne({ email })
+  if (!email || !password) {
+    next(new BadRequest('Не передан емейл или пароль'));
+  }
+  User.findOne({ email })
     .select('+password')
     .then((user) => {
-      // если нет пользователя
       if (!user) {
-        throw next(new Unauthorized('Неправильный Email или пароль'));
-        // const err = new Error('Неправильный Email или пароль'); // создаем объект ошибки
-        // err.statusCode = forbidden; // записываем о объект ошибки поле
-        // throw err; // оператор throw генерирует ошибку
+        throw new Unauthorized('Не авторизован');
+      } else {
+        return bcrypt
+          .compare(password, user.password)
+          .then((isPasswordCorrect) => {
+            if (!isPasswordCorrect) {
+              throw new Unauthorized('Не авторизован');
+            } else {
+              const token = generateToken({ _id: user._id });
+              res.send({ token });
+            }
+          }).catch(() => next(new Unauthorized('Неправильный Email или пароль')));
       }
-      return Promise.all([
-        user,
-        bcrypt.compare(password, user.password), // переданный пароль и паролт из БД
-      ]);
-    })
-    .then(([user, isPasswordCorrect]) => {
-      if (!isPasswordCorrect) {
-        next(new Unauthorized('Неправильный Email или пароль'));
-        // const err = new Error('Неправильный Email или пароль'); // создаем объект ошибки
-        // err.statusCode = forbidden; // записываем о объект ошибки поле
-        // throw err; // оператор throw генерирует ошибку
-      }
-      return generateToken({ _id: user._id });
-    })
-    .then((token) => {
-      res.send({ token });
     })
     .catch(next);
-  // .catch((err) => {
-  //   if (err.statusCode === 403) {
-  //     return res.status(403).send({ message: err.message });
-  //   }
-  //   res.status(500).send({ message: 'Что-то пошло не так' });
-  // });
 };
 
 // обновляем данные пользователя
 module.exports.patchProfile = (req, res, next) => {
   const { name, about } = req.body;
-  User.findByIdAndUpdate(req.user.id, { name, about }, { new: true, runValidators: true })
+  User.findByIdAndUpdate(
+    req.user.id,
+    { name, about },
+    { new: true, runValidators: true },
+  )
     .orFail(() => new NotFound('Пользователь с таким id не найден'))
     .then((user) => {
-      res
-        .status(ok)
-        .send(user);
+      res.status(ok).send(user);
     })
     .catch((err) => {
       if (err.name === 'ValidationError' || err.name === 'CastError') {
@@ -196,12 +143,14 @@ module.exports.patchProfile = (req, res, next) => {
 // обновляем аватар
 module.exports.patchAvatar = (req, res, next) => {
   const { avatar } = req.body;
-  User.findByIdAndUpdate(req.user.id, { avatar }, { new: true, runValidators: true })
+  User.findByIdAndUpdate(
+    req.user.id,
+    { avatar },
+    { new: true, runValidators: true },
+  )
     .orFail(() => new NotFound('Пользователь с таким id не найден'))
     .then((user) => {
-      res
-        .status(ok)
-        .send(user);
+      res.status(ok).send(user);
     })
     .catch((err) => {
       if (err.name === 'ValidationError' || err.name === 'CastError') {
