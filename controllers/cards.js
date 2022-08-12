@@ -15,7 +15,6 @@ const {
 module.exports.getCards = (req, res, next) => {
   Card.find({})
     .then((cards) => res.send({ data: cards }))
-    // .catch((err) => res.status(serverError).send({ message: err.message }));
     .catch(next);
 };
 
@@ -33,11 +32,8 @@ module.exports.deleteCurrentCard = (req, res, next) => {
       }
       card.remove()
         .then(() => {
-          res.status(200).send({ message: 'Карточка успешно удалена' });
+          res.status(ok).send({ message: 'Карточка успешно удалена' });
         });
-      // res
-      //   .status(ok)
-      //   .send({ data: card });
     })
     .catch((err) => {
       if (err.name === 'CastError') {
@@ -82,21 +78,12 @@ module.exports.likeCard = (req, res, next) => {
   const { cardId } = req.params;
 
   Card.findByIdAndUpdate(cardId, { $addToSet: { likes: owner } }, { new: true })
-    // .orFail(() => {
-    //   const error = new Error();
-    //   error.statusCode = notFound;
-    //   throw error;
-    // })
     .orFail(() => new NotFound('Карточка не существует'))
     .then((card) => res.send(card))
     .catch((err) => {
       if (err.name === 'CastError') {
         next(new BadRequest('Невалидный идентификатор карточки.'));
-        // res.status(badRequest).send({ message: 'Невалидный идентификатор карточки' });
-      // } else if (err.statusCode === notFound) {
-      //   res.status(notFound).send({ message: 'Такой карточки нет' });
       } else {
-        // res.status(serverError).send({ message: err.message });
         next(err);
       }
     });
@@ -108,21 +95,12 @@ module.exports.dislikeCard = (req, res, next) => {
   const { cardId } = req.params;
 
   Card.findByIdAndUpdate(cardId, { $pull: { likes: owner } }, { new: true })
-    // .orFail(() => {
-    //   const error = new Error();
-    //   error.statusCode = notFound;
-    //   throw error;
-    // })
     .orFail(() => new NotFound('Карточка не существует.'))
     .then((card) => res.send(card))
     .catch((err) => {
       if (err.name === 'CastError') {
-        // res.status(badRequest).send({ message: 'Невалидный идентификатор карточки' });
         next(new BadRequest('Невалидный идентификатор карточки'));
-        // } else if (err.statusCode === notFound) {
-        //   res.status(notFound).send({ message: 'Карточка не существует.' });
       } else {
-        // res.status(serverError).send({ message: err.message });
         next(err);
       }
     });
