@@ -8,7 +8,7 @@ const NotFound = require('../errors/error404');
 const InternalServerError = require('../errors/error500');
 
 const {
-  forbidden,
+  ok,
 } = require('../utils/statusResponse');
 
 // возвращает все карточки 500
@@ -32,7 +32,10 @@ module.exports.deleteCurrentCard = (req, res, next) => {
       }
       card.remove()
         .then(() => {
-          res.status(forbidden).send({ message: 'Карточка успешно удалена' });
+          res.status(ok).send({ message: 'Карточка успешно удалена' });
+        })
+        .catch(() => {
+          next(new NotFound('Некорректные данные'));
         });
     })
     .catch((err) => {
