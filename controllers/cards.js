@@ -8,7 +8,7 @@ const NotFound = require('../errors/error404');
 const InternalServerError = require('../errors/error500');
 
 const {
-  ok,
+  forbidden,
 } = require('../utils/statusResponse');
 
 // возвращает все карточки 500
@@ -27,12 +27,12 @@ module.exports.deleteCurrentCard = (req, res, next) => {
         return;
       }
       if (card.owner.toString() !== req.user.id.toString()) {
-        // eslint-disable-next-line consistent-return
-        return next(new Forbidden('Нельзя удалить эту карточку'));
+        next(new Forbidden('Нельзя удалить эту карточку'));
+        return;
       }
       card.remove()
         .then(() => {
-          res.status(ok).send({ message: 'Карточка успешно удалена' });
+          res.status(forbidden).send({ message: 'Карточка успешно удалена' });
         });
     })
     .catch((err) => {
