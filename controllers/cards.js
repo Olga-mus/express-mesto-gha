@@ -27,8 +27,8 @@ module.exports.deleteCurrentCard = (req, res, next) => {
         return;
       }
       if (card.owner.toString() !== req.user.id.toString()) {
-        next(new Forbidden('Нельзя удалить эту карточку'));
-        return;
+        // eslint-disable-next-line consistent-return
+        return next(new Forbidden('Нельзя удалить эту карточку'));
       }
       card.remove()
         .then(() => {

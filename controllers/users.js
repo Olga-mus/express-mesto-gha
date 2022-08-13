@@ -38,7 +38,7 @@ module.exports.getCurrentUser = (req, res, next) => {
       if (err.name === 'CastError') {
         next(new BadRequest('Невалидный идентификатор для пользователя'));
       } else {
-        next(new InternalServerError('Такого пользователя не существует'));
+        next(new NotFound('Такого пользователя не существует'));
       }
     });
 };
