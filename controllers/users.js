@@ -46,21 +46,12 @@ module.exports.getCurrentUser = (req, res, next) => {
 // получаем инф о текущем пользователе
 module.exports.getCurrentUserProfile = (req, res, next) => {
   const { id } = req.user;
-  console.log(req.user);
+  console.log('id', id);
   User.findById(id)
     .orFail(() => new NotFound('Пользователь не существует'))
-    .then((user) => res.status(ok).send(user))
+    .then((user) => res.status(ok).send({ data: user }))
     .catch(next);
 };
-
-// module.exports.getCurrentUserProfile = (req, res, next) => {
-//   const id = req.user._id;
-//   console.log(id);
-//   User.findById(id)
-//     .orFail(() => new NotFound('Пользователь не существует.'))
-//     .then((user) => res.send(user))
-//     .catch(next);
-// };
 
 // дорабатываем контроллер создание пользователя
 // eslint-disable-next-line arrow-body-style
