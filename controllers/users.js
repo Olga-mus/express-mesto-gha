@@ -10,7 +10,6 @@ const BadRequest = require('../errors/error400');
 const NotFound = require('../errors/error404');
 const Unauthorized = require('../errors/error401');
 const Conflict = require('../errors/error409');
-const InternalServerError = require('../errors/error500');
 
 const {
   ok,
@@ -38,8 +37,8 @@ module.exports.getCurrentUser = (req, res, next) => {
       if (err.name === 'CastError') {
         next(new BadRequest('Невалидный идентификатор для пользователя'));
       } else {
-        next(err);
-        // next(new NotFound('Такого пользователя не существует'));
+        // next(err);
+        next(new NotFound('Такого пользователя не существует'));
       }
     });
 };
