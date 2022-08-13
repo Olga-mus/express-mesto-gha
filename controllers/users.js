@@ -49,7 +49,7 @@ module.exports.getCurrentUserProfile = (req, res, next) => {
   const id = req.user._id;
   User.findById(id)
     .orFail(() => new NotFound('Пользователь не существует'))
-    .then((user) => res.send(user))
+    .then((user) => res.status(ok).send(user))
     .catch(next);
 };
 
