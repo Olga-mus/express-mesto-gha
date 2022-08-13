@@ -38,7 +38,8 @@ module.exports.getCurrentUser = (req, res, next) => {
       if (err.name === 'CastError') {
         next(new BadRequest('Невалидный идентификатор для пользователя'));
       } else {
-        next(new NotFound('Такого пользователя не существует'));
+        next(err);
+        // next(new NotFound('Такого пользователя не существует'));
       }
     });
 };
@@ -152,7 +153,8 @@ module.exports.patchAvatar = (req, res, next) => {
       if (err.name === 'ValidationError' || err.name === 'CastError') {
         next(new BadRequest('Некорректные данные'));
       } else {
-        next(new InternalServerError('Что-то пошло не так'));
+        next(err);
+        // next(new InternalServerError('Что-то пошло не так'));
       }
     });
 };
