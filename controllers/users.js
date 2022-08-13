@@ -110,7 +110,7 @@ module.exports.login = (req, res, next) => {
             if (!isPasswordCorrect) {
               throw new Unauthorized('Не авторизован');
             } else {
-              const token = generateToken({ _id: user._id });
+              const token = generateToken({ _id: user._id.toString() });
               res.send({ token });
             }
           }).catch(() => next(new Unauthorized('Неправильный Email или пароль')));
