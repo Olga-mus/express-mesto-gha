@@ -43,13 +43,22 @@ module.exports.getCurrentUser = (req, res, next) => {
     });
 };
 
-// получаем инф о текущем пользователе
+// // получаем инф о текущем пользователе
+// module.exports.getCurrentUserProfile = (req, res, next) => {
+//   // const { id } = req.user;
+//   const id = req.user._id;
+//   User.findById(id)
+//     .orFail(() => new NotFound('Пользователь не существует'))
+//     .then((user) => res.status(ok).send(user))
+//     .catch(next);
+// };
+
 module.exports.getCurrentUserProfile = (req, res, next) => {
-  // const { id } = req.user;
   const id = req.user._id;
+
   User.findById(id)
-    .orFail(() => new NotFound('Пользователь не существует'))
-    .then((user) => res.status(ok).send(user))
+    .orFail(() => new NotFound('Пользователь не существует.'))
+    .then((user) => res.send(user))
     .catch(next);
 };
 
