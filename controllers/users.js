@@ -94,9 +94,6 @@ module.exports.createUser = (req, res, next) => {
 // логин
 module.exports.login = (req, res, next) => {
   const { email, password } = req.body;
-  if (!email || !password) {
-    next(new BadRequest('Не передан емейл или пароль'));
-  }
   User.findOne({ email })
     .select('+password')
     .then((user) => {

@@ -33,7 +33,8 @@ module.exports.deleteCurrentCard = (req, res, next) => {
       card.remove()
         .then(() => {
           res.status(ok).send({ message: 'Карточка успешно удалена' });
-        });
+        })
+        .catch(next);
     // .catch(() => {
     //   next(new NotFound('Некорректные данные'));
     // });
