@@ -19,7 +19,7 @@ const isAuthorized = (req, res, next) => {
   try {
     const payload = checkToken(token);
     // проверить пользователя
-    User.findOne({ id: payload.id })
+    User.findOne({ id: payload._id })
       // eslint-disable-next-line consistent-return
       .then((user) => {
         if (!user) {
