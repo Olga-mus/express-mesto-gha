@@ -58,7 +58,7 @@ module.exports.createUser = (req, res, next) => {
   const {
     name, about, avatar, email, password,
   } = req.body;
-  // если емэйл и пароль отсутствует - возвращаем ошибку
+  // если емэйл и пароль отсутствует - возвращаем ошибку.
 
   bcrypt
     .hash(password, SALT_ROUNDS)
