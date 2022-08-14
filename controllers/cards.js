@@ -18,16 +18,56 @@ module.exports.getCards = (req, res, next) => {
     .catch(next);
 };
 
+// // удаляем карточку
+// module.exports.deleteCurrentCard = (req, res, next) => {
+//   Card.findById(req.params.cardId);
+//   console.log(req.params.cardId)
+//     .then((card) => {
+//       if (!card) {
+//         console.log('карта', card);
+//         next(new NotFound('Карточка с таким id не найдена'));
+//         return;
+//       }
+//       // if (card.owner.toString() !== req.user.id.toString()) {
+//       if (card.owner.toString() !== req.user._id.toString()) {
+//         next(new Forbidden('Нельзя удалить эту карточку'));
+//         return;
+//       }
+//       card.remove()
+//         .then(() => {
+//           res.status(ok).send({ message: 'Карточка успешно удалена' });
+//         })
+//         .catch(next);
+//     // .catch(() => {
+//     //   next(new NotFound('Некорректные данные'));
+//     // });
+//     })
+//     .catch((err) => {
+//       if (err.name === 'CastError') {
+//         next(new BadRequest('Некорректные данные'));
+//       } else {
+//         next(new InternalServerError('Что-то пошло не так'));
+//       }
+//     });
+// };
+
 // удаляем карточку
 module.exports.deleteCurrentCard = (req, res, next) => {
-  Card.findById(req.params.cardId)
+  console.log('DELETE', req.params.cardId);
+  // const userId = req.user._id;
+  // const { id } = req.params;
+  const { cardId } = req.params;
+  console.log('card', cardId, 'params', req.params.cardId);
+
+  Card.findById(cardId)
     .then((card) => {
+      console.log('CARD', card.owner.toString(), req.user._id.toString());
       if (!card) {
         next(new NotFound('Карточка с таким id не найдена'));
         return;
       }
-      if (card.owner.toString() !== req.user.id.toString()) {
-        console.log('dfdf');
+      // if (card.owner.toString() !== req.user.id.toString()) {
+      if (card.owner.toString() !== req.user._id.toString()) {
         next(new Forbidden('Нельзя удалить эту карточку'));
         return;
       }
@@ -44,7 +84,8 @@ module.exports.deleteCurrentCard = (req, res, next) => {
       if (err.name === 'CastError') {
         next(new BadRequest('Некорректные данные'));
       } else {
-        next(new InternalServerError('Что-то пошло не так'));
+        next(new InternalServerError(err.message));
+        // next(new InternalServerError('Что-то пошло не так'));
       }
     });
 };
