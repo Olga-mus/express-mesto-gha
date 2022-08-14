@@ -45,8 +45,8 @@ module.exports.getCurrentUser = (req, res, next) => {
 
 // получаем инф о текущем пользователе
 module.exports.getCurrentUserProfile = (req, res, next) => {
-  const { id } = req.user;
-  User.findById(id)
+  const { _id } = req.user;
+  User.findById(_id)
     .orFail(() => new NotFound('Пользователь не существует'))
     .then((user) => res.status(ok).send({ data: user }))
     .catch(next);
@@ -119,7 +119,7 @@ module.exports.login = (req, res, next) => {
 module.exports.patchProfile = (req, res, next) => {
   const { name, about } = req.body;
   User.findByIdAndUpdate(
-    req.user.id,
+    req.user._id,
     { name, about },
     { new: true, runValidators: true },
   )
@@ -140,7 +140,7 @@ module.exports.patchProfile = (req, res, next) => {
 module.exports.patchAvatar = (req, res, next) => {
   const { avatar } = req.body;
   User.findByIdAndUpdate(
-    req.user.id,
+    req.user._id,
     { avatar },
     { new: true, runValidators: true },
   )

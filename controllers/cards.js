@@ -27,6 +27,7 @@ module.exports.deleteCurrentCard = (req, res, next) => {
         return;
       }
       if (card.owner.toString() !== req.user.id.toString()) {
+        console.log('dfdf');
         next(new Forbidden('Нельзя удалить эту карточку'));
         return;
       }
