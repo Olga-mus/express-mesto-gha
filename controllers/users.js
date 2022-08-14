@@ -10,7 +10,6 @@ const BadRequest = require('../errors/error400');
 const NotFound = require('../errors/error404');
 const Unauthorized = require('../errors/error401');
 const Conflict = require('../errors/error409');
-const InternalServerError = require('../errors/error500');
 
 const {
   ok,
@@ -38,16 +37,16 @@ module.exports.getCurrentUser = (req, res, next) => {
       if (err.name === 'CastError') {
         next(new BadRequest('Невалидный идентификатор для пользователя'));
       } else {
-        next(err);
-        // next(new NotFound('Такого пользователя не существует'));
+        // next(err);
+        next(new NotFound('Такого пользователя не существует'));
       }
     });
 };
 
 // получаем инф о текущем пользователе
 module.exports.getCurrentUserProfile = (req, res, next) => {
-  const { id } = req.user;
-  User.findById(id)
+  const { _id } = req.user;
+  User.findById(_id)
     .orFail(() => new NotFound('Пользователь не существует'))
     .then((user) => res.status(ok).send({ data: user }))
     .catch(next);
@@ -120,7 +119,7 @@ module.exports.login = (req, res, next) => {
 module.exports.patchProfile = (req, res, next) => {
   const { name, about } = req.body;
   User.findByIdAndUpdate(
-    req.user.id,
+    req.user._id,
     { name, about },
     { new: true, runValidators: true },
   )
@@ -141,7 +140,7 @@ module.exports.patchProfile = (req, res, next) => {
 module.exports.patchAvatar = (req, res, next) => {
   const { avatar } = req.body;
   User.findByIdAndUpdate(
-    req.user.id,
+    req.user._id,
     { avatar },
     { new: true, runValidators: true },
   )
