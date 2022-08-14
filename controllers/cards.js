@@ -53,15 +53,13 @@ module.exports.getCards = (req, res, next) => {
 
 // удаляем карточку
 module.exports.deleteCurrentCard = (req, res, next) => {
-  console.log('DELETE', req.params.cardId);
+  console.log('DELETE', req.params);
   // const userId = req.user._id;
   // const { id } = req.params;
   const { cardId } = req.params;
-  console.log('card', cardId, 'params', req.params.cardId);
 
   Card.findById(cardId)
     .then((card) => {
-      console.log('CARD', card.owner.toString(), req.user._id.toString());
       if (!card) {
         next(new NotFound('Карточка с таким id не найдена'));
         return;
@@ -84,8 +82,7 @@ module.exports.deleteCurrentCard = (req, res, next) => {
       if (err.name === 'CastError') {
         next(new BadRequest('Некорректные данные'));
       } else {
-        next(new InternalServerError(err.message));
-        // next(new InternalServerError('Что-то пошло не так'));
+        next(new InternalServerError('Что-то пошло не так'));
       }
     });
 };
@@ -97,7 +94,7 @@ module.exports.createCard = (req, res, next) => {
     link,
     likes,
   } = req.body;
-  const owner = req.user.id;
+  const owner = req.user._id;
   Card.create({
     name,
     link,
