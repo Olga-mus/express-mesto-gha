@@ -37,8 +37,8 @@ module.exports.getCurrentUser = (req, res, next) => {
       if (err.name === 'CastError') {
         next(new BadRequest('Невалидный идентификатор для пользователя'));
       } else {
-        // next(err);
-        next(new NotFound('Такого пользователя не существует'));
+        next(err);
+        // next(new NotFound('Такого пользователя не существует'));
       }
     });
 };
@@ -98,6 +98,8 @@ module.exports.login = (req, res, next) => {
     .select('+password')
     .then((user) => {
       if (!user) {
+        // Инструкция throw генерирует исключение и обработка кода
+        // переходит в следующий блок catch(next)
         throw new Unauthorized('Не авторизован');
       } else {
         return bcrypt
