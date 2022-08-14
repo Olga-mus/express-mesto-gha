@@ -36,6 +36,7 @@ const isAuthorized = (req, res, next) => {
     payload = checkToken(token);
   } catch (err) {
     next(new Unauthorized('Необходима авторизация'));
+    return;
   }
   req.user = payload;
   next();
