@@ -14,7 +14,7 @@ const isAuthorized = (req, res, next) => {
 
   let payload;
   const token = auth.replace('Bearer ', '');
-
+  // ///
   //   try {
   //     const payload = checkToken(token);
   //     // проверить пользователя
