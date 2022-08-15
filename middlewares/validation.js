@@ -61,7 +61,7 @@ const validateCurrentUser = celebrate({
     .keys({
       userId: Joi
         .string()
-        // .hex()
+        .hex()
         .required(),
     }),
 });

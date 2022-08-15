@@ -29,10 +29,7 @@ module.exports.getCurrentUser = (req, res, next) => {
   const { userId } = req.params;
   console.log('userId', userId);
   User.findById(userId)
-    .orFail(() => {
-      // eslint-disable-next-line no-new
-      new NotFound('Нет пользователя с таким id');
-    })
+    .orFail(() => new NotFound('Нет пользователя с таким id'))
     .then((users) => res.send({ data: users }))
     .catch(next);
 };
@@ -149,7 +146,6 @@ module.exports.patchAvatar = (req, res, next) => {
         next(new BadRequest('Некорректные данные'));
       } else {
         next(err);
-        // next(new InternalServerError('Что-то пошло не так'));
       }
     });
 };

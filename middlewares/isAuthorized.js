@@ -14,7 +14,7 @@ const isAuthorized = (req, res, next) => {
 
   let payload;
   const token = auth.replace('Bearer ', '');
-
+  // ///
   //   try {
   //     const payload = checkToken(token);
   //     // проверить пользователя
@@ -35,8 +35,8 @@ const isAuthorized = (req, res, next) => {
   try {
     payload = checkToken(token);
   } catch (err) {
-    next(new Unauthorized('Необходима авторизация'));
-    return;
+    // eslint-disable-next-line consistent-return
+    return next(new Unauthorized('Необходима авторизация'));
   }
   req.user = payload;
   next();
