@@ -48,9 +48,6 @@ app.use((err, req, res, next) => {
     return res.status(err.statusCode).send({ message: err.message });
   }
   res.status(500).send({ message: 'Что-то пошло не так' });
-  console.log('err.statusCode', err.statusCode);
-  console.log('err', err);
-  // res.status(500).send({ message: err.statusCode });
   next();
 });
 
