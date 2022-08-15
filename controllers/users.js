@@ -33,15 +33,7 @@ module.exports.getCurrentUser = (req, res, next) => {
       new NotFound('Нет пользователя с таким id');
     })
     .then((users) => res.send({ data: users }))
-    .catch((err) => {
-      if (err.name === 'CastError') {
-        next(new BadRequest('Невалидный идентификатор для пользователя'));
-      } else {
-        // next(err);
-        next(err.statusCode);
-        // next(new NotFound('Такого пользователя не существует'));
-      }
-    });
+    .catch(next);
 };
 
 // получаем инф о текущем пользователе
