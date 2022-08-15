@@ -27,7 +27,6 @@ module.exports.getUsers = (req, res, next) => {
 // Получаем текущего пользователя по id 404
 module.exports.getCurrentUser = (req, res, next) => {
   const { userId } = req.params;
-  console.log('userId', userId);
   User.findById(userId)
     .orFail(() => new NotFound('Нет пользователя с таким id'))
     .then((users) => res.send({ data: users }))
