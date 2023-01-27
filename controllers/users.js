@@ -35,6 +35,7 @@ module.exports.getCurrentUser = (req, res, next) => {
 
 // получаем инф о текущем пользователе
 module.exports.getCurrentUserProfile = (req, res, next) => {
+  console.log('REQ', req.user);
   const { _id } = req.user;
   User.findById(_id)
     .orFail(() => new NotFound('Пользователь не существует'))
